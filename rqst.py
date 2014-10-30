@@ -5,61 +5,103 @@ from struct import *
 
 
 class Packet:
-    def __init__(self):
-        pass
+    def __init__(self, data=None):
+        self.ip_header = None
+        self.tcp_header = None
+        self.ip_address = None
+        self.header_size = 0
+        self.data_size = 0
 
-    def new_packet(self, data):
+        if data is not None:
+          self.ip_address = data[1]
+          self.ip_header = self.parse_ip_header(data[0])
+          self.tcp_header = self.parse_tcp_header(data[0], self.ip_header.length)
+          self.header_size = self.ip_header.length + self.tcp_header.length
+          self.data_size = len(data[0]) - self.header_size
+          self.raw_data = data[0][self.header_size:]
+          self.pprint()
 
-        # Process IP Header
-        ip_adr = data[1]
-        packet = data[0]
+    def pprint(self):
+      self.ip_header.pprint()
+      self.tcp_header.pprint()
+           
+    def parse_ip_header(self, packet):
+        """
+          Parses and returns an ip_header object
+          from the packets data
+        """
+        # header length is 20 
         ip_hdr = packet[0:20]
+
         # unpack ip_head see:
         #   https://docs.python.org/2/library/struct.html#format-characters
-        ip_header = unpack('!BBHHHBBH4s4s', ip_hdr)
+        ip_header_data = unpack('!BBHHHBBH4s4s', ip_hdr)
         
         # extract version and header length
-        v_hl = ip_header[0]
+        v_hl = ip_header_data[0]
         version = v_hl >> 4
-        ip_header_length = ((v_hl >> 4) *4)
+        ip_header_length = (v_hl >> 4) * 4
 
         # extract ttl and protocol
-        ttl = ip_header[5]
-        protocol = ip_header[6]
+        ttl = ip_header_data[5]
+        protocol = ip_header_data[6]
         
         # get source and destination address
-        src_adr = socket.inet_ntoa(ip_header[8])
-        dest_adr = socket.inet_ntoa(ip_header[9])
+        src_adr = socket.inet_ntoa(ip_header_data[8])
+        dest_adr = socket.inet_ntoa(ip_header_data[9])
 
-        print "IP Header"
-        print "Version: %s" % str(version)
-        print "Length: %d" % ip_header_length
-        print "TTL: %d" % ttl
-        print "Protocol: %s" % str(protocol)
-        print "Source address: %s" % str(src_adr)
-        print "Destination address: %s" % str(dest_adr)
+        return ip_header(version=version, length=ip_header_length,\
+            ttl=ttl, protocol=protocol, src_adr=src_adr, dest_adr=dest_adr)
 
-        # Process TCP Header
-
+    def parse_tcp_header(self, packet, offset):
         # Extract TCP Header
-        tcp_hdr = packet[ip_header_length:ip_header_length + 20]
-        tcp_header = unpack('!HHLLBBHHH', tcp_hdr)
+        tcp_hdr = packet[offset:offset+ 20]
+        tcp_header_data = unpack('!HHLLBBHHH', tcp_hdr)
 
-        # Get field
-        source_port = tcp_header[0]
-        dest_port = tcp_header[1]
-        sequence = tcp_header[2]
-        ack = tcp_header[3]
-        doff_reserved = tcp_header[4]
-        tcp_length = doff_reserved >> 4
+        # Get various field data
+        source_port = tcp_header_data[0]
+        dest_port = tcp_header_data[1]
+        sequence = tcp_header_data[2]
+        ack = tcp_header_data[3]
+        doff_reserved = tcp_header_data[4]
+        tcp_length = (doff_reserved >> 4) * 4
 
-        header_size = ip_header_length + tcp_length * 4
-        data_size = len(paacket) - header_size
+        return tcp_header(length=tcp_length, src_port=source_port, dest_port=dest_port,\
+            ack=ack, seq=sequence)
 
-        raw_data = packet[h_size:]
+    
+class tcp_header:
+  def __init__(self, length=None, src_port=None, dest_port=None, ack=None, seq=None):
+    self.length = length
+    self.src_port = src_port
+    self.dest_port = dest_port
+    self.ack = ack
+    self.seq = seq
 
-        print "Data:"
-        print raw_data
+  def pprint(self):
+    print "TCP Header"
+    print "Source port: %s" % self.src_port
+    print "Destination port: %s" % self.dest_port
+    print "Acknowledgemnet: %s" % self.ack
+    print "Sequence: %s" % self.seq
+    print "TCP Length: %d" % self.length
+class ip_header:
+  def __init__(self,version=None,length=None,ttl=None,protocol=None,src_adr=None,dest_adr=None):
+    self.version = version
+    self.length = length 
+    self.ttl = ttl
+    self.protocol = protocol
+    self.src_adr = src_adr
+    self.dest_adr = dest_adr
+
+  def pprint(self):
+    print "IP Header"
+    print "Version: %s" % str(self.version)
+    print "Length: %d" % self.length
+    print "TTL: %d" % self.ttl
+    print "Protocol: %s" % str(self.protocol)
+    print "Source address: %s" % str(self.src_adr)
+    print "Destination address: %s" % str(self.dest_adr)
 
 
 class Connection:
@@ -92,7 +134,7 @@ class Connection:
         self.sock.sendto(data,"50.17.220.245")
 
     def recv(self):
+        # self.buf is a tuple of (packet, ip_address)
         self.buf = self.sock.recvfrom(65565)
-        p = Packet()
-        p.new_packet(self.buf)
+        p = Packet(self.buf)
         return self.buf
