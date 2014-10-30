@@ -1,6 +1,7 @@
 """
   implements ip/tcp using raw sockets
-  """
+"""
+import http_client
 
 def parse_options(argv):
     if len(argv) < 2:
@@ -11,5 +12,5 @@ def parse_options(argv):
 
 def run(argv):
     url = parse_options(argv)
-    print "The url is %s" % url
+    http_client.run(url)
 

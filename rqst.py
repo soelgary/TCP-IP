@@ -107,6 +107,15 @@ class ip_header:
 class Connection:
     def __init__(self):
         self.BUFFER_SIZE = (2**16)
+
+    def new_basic_connection(self, hostname):
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.host = socket.gethostbyname(socket.gethostname())
+        self.hostname = socket.gethostbyname(hostname)
+        self.port = 80
+        self.buf = ""
+        print self.hostname
+
     def new_connection(self,hostname):
         
         # set up raw socket
@@ -121,6 +130,7 @@ class Connection:
     def connect(self):
         try:
             self.sock.connect((self.hostname,self.port))
+            print 'connected to ' + self.hostname
         except socket.gaierror as e:
             print("Recieved error when connecting to " + str((self.hostname, self.port)))
             raise e
@@ -131,7 +141,7 @@ class Connection:
 
     def send(self, data):
         print self.host
-        self.sock.sendto(data,"50.17.220.245")
+        self.sock.sendall(data)
 
     def recv(self):
         # self.buf is a tuple of (packet, ip_address)
