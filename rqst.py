@@ -71,12 +71,39 @@ class Packet:
 
     
 class tcp_header:
-  def __init__(self, length=None, src_port=None, dest_port=None, ack=None, seq=None):
-    self.length = length
-    self.src_port = src_port
-    self.dest_port = dest_port
-    self.ack = ack
-    self.seq = seq
+  def __init__(self, length=None, src_port=None, dest_port=None, ack=None, seq=None, doff_reserved=None, flags=None, window_size=None, checksum=None, urg_pointer=None):
+    self.srcp = 80
+    self.dstp = 80
+    self.seqn = 0
+    self.ackn = 0
+    self.offset = 5
+    self.reserved = 0
+    self.urg = 0
+    self.ack = 0
+    self.psh = 1
+    self.rst = 0
+    self.syn = 0
+    self.fin = 0
+    self.window = socket.htons(5840)
+    self.checksum = 0
+    self.urgp = 0
+    self.payload = ""
+
+  def to_struct(self):
+    data_offset = (self.offset << 4) + 0
+    flags = self.fin + (self.syn << 1) + (self.rst << 2) + (self.psh << 3) + (self.ack << 4) + (self.urg << 5)
+    header = pack('!HHLLBBHHH',
+                  self.srcp,
+                  self.dstp,
+                  self.seqn,
+                  self.ackn,
+                  data_offset,
+                  flags,
+                  self.window,
+                  self.checksum,
+                  self.urgp)
+    return header
+
 
   def pprint(self):
     print "TCP Header"
@@ -85,14 +112,41 @@ class tcp_header:
     print "Acknowledgemnet: %s" % self.ack
     print "Sequence: %s" % self.seq
     print "TCP Length: %d" % self.length
+    print "Offset: %d" % self.doff_reserved
+    print "Flags: %d" % self.flags
+    print "Window Size: %d" % socket.htons(5840)
+    print "Checksum: %d" % self.checksum
+    print "Urg Pointer: %d" % self.urg_pointer
+
 class ip_header:
-  def __init__(self,version=None,length=None,ttl=None,protocol=None,src_adr=None,dest_adr=None):
-    self.version = version
-    self.length = length 
-    self.ttl = ttl
-    self.protocol = protocol
-    self.src_adr = src_adr
-    self.dest_adr = dest_adr
+  def __init__(self, length=15, src_adr="127.0.0.1", dest_adr="54.213.206.253", reserved=0):
+    self.version = 4
+    self.ihl = 5
+    self.dscp = 0
+    self.ecn = 0
+    self.total_length = 0
+    self.identification = 0
+    self.flags = 0
+    self.offset = 0
+    self.ttl = 0
+    self.protocol = socket.IPPROTO_TCP
+    self.checksum = 0
+    self.src_adr = socket.inet_aton(src_adr)
+    self.dest_adr = socket.inet_aton(dest_adr)
+
+  def to_struct(self):
+    header = pack("!BBHHHBBH4s4s",
+              (self.version << 4) + self.ihl,
+              (self.dscp << 2) + self.ecn,
+              self.total_length,
+              self.identification,
+              (self.flags << 13) + self.offset,
+              self.ttl,
+              self.protocol,
+              self.checksum,
+              self.src_adr,
+              self.dest_adr)
+    return header
 
   def pprint(self):
     print "IP Header"
@@ -142,6 +196,7 @@ class Connection:
     def send(self, data):
         print self.host
         self.sock.sendall(data)
+        print "Sent,\t", data
 
     def recv(self):
         # self.buf is a tuple of (packet, ip_address)
