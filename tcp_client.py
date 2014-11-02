@@ -7,54 +7,17 @@ import binascii
 class TCPClient():
   def __init__(self, destination, data):
     self.dest_addr = socket.gethostbyname(destination)
-    self.src_addr = socket.gethostbyname(socket.gethostname())
+    self.src_addr = '192.168.1.218'#= socket.gethostbyname(socket.gethostname())
     self.data = data
     self.connection = Connection()
+    self.ipheader = ip_header(src_adr=self.src_addr, dest_adr=self.dest_addr).to_struct()
 
   def do_handshake(self):
     self.connection.new_connection(self.dest_addr)
     self.connection.connect()
-    tcp_header(syn=1).pprint()
 
-    tcpheader = tcp_header(syn=1).to_struct()
-    ipheader = ip_header(src_adr=self.src_addr, dest_adr=self.dest_addr).to_struct()
-    packet = ipheader + tcpheader
-
-
-    pp = pprint.PrettyPrinter(indent=4)
-    pp.pprint(ipheader)
-    pp.pprint(tcpheader)
-    print calcsize('!BBHHHBBH4s4sI')
-    print calcsize('!HHLLBBHHH')
-
-    print unpack('!BBHHHBBH4s4sI', ipheader)
-    print unpack('!HHLLBBHHH', tcpheader)
-    
-    print binascii.hexlify(tcpheader)
-
-    ipchecksum = self.checksum(ipheader + tcpheader)
-    tcpchecksum = self.checksum(tcpheader)
-
-    ipheader = ip_header(checksum=ipchecksum, src_adr=self.src_addr, dest_adr=self.dest_addr).to_struct()
-    tcpheader = tcp_header(checksum=tcpchecksum, syn=1).to_struct()
-    print ipchecksum
-    print tcpchecksum
-    print unpack('!BBHHHBBH4s4sI', ipheader)
-    print unpack('!HHLLBBHHH', tcpheader)
-    self.connection.send(ipheader + tcpheader)
-
-
-  # checksum functions needed for calculation checksum
-  def checksum(self, msg):
-    s = 0
-    # loop taking 2 characters at a time
-    for i in range(0, len(msg), 2):
-      w = ord(msg[i]) + (ord(msg[i+1]) << 8 )
-      s = s + w
-    s = (s>>16) + (s & 0xffff);
-    s = s + (s >> 16);
-    #complement and mask to 4 byte short
-    s = ~s & 0xffff
-    return s
-
+    tcpheader = tcp_header(self.src_addr, self.dest_addr, syn=1).to_struct()
+    packet = self.ipheader + tcpheader
+    self.connection.send(packet)
+    self.connection.recv()
 
