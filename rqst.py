@@ -71,27 +71,28 @@ class Packet:
 
     
 class tcp_header:
-  def __init__(self, length=None, src_port=None, dest_port=None, ack=None, seq=None, doff_reserved=None, flags=None, window_size=None, checksum=None, urg_pointer=None):
+  def __init__(self, ack=0, syn=0, fin=0, seqn=0, checksum=0):
     self.srcp = 80
     self.dstp = 80
-    self.seqn = 0
+    self.seqn = seqn
     self.ackn = 0
     self.offset = 5
     self.reserved = 0
     self.urg = 0
-    self.ack = 0
+    self.ack = ack
     self.psh = 1
     self.rst = 0
-    self.syn = 0
-    self.fin = 0
+    self.syn = syn
+    self.fin = fin
     self.window = socket.htons(5840)
-    self.checksum = 0
+    self.checksum = checksum
     self.urgp = 0
     self.payload = ""
 
   def to_struct(self):
-    data_offset = (self.offset << 4) + 0
-    flags = self.fin + (self.syn << 1) + (self.rst << 2) + (self.psh << 3) + (self.ack << 4) + (self.urg << 5)
+    data_offset = (self.offset << 4) + (0 << 1) + 0
+    flags = self.urg + (self.ack << 1) + (self.psh << 2) + (self.rst << 3) + (self.syn << 4) + (self.fin << 5)
+    print "FLAGS: %d" % flags
     header = pack('!HHLLBBHHH',
                   self.srcp,
                   self.dstp,
@@ -107,30 +108,30 @@ class tcp_header:
 
   def pprint(self):
     print "TCP Header"
-    print "Source port: %s" % self.src_port
-    print "Destination port: %s" % self.dest_port
-    print "Acknowledgemnet: %s" % self.ack
-    print "Sequence: %s" % self.seq
-    print "TCP Length: %d" % self.length
-    print "Offset: %d" % self.doff_reserved
-    print "Flags: %d" % self.flags
+    print "Source port: %s" % self.srcp
+    print "Destination port: %s" % self.dstp
+    print "Sequence Number: %s" % self.seqn
+    print "Acknowledgemnet Number: %s" % self.ackn
+    print "Data Offset: %s" % self.offset
+    print "Reserved: %s" % self.reserved
+    print "Flags: %d" % (self.fin + (self.syn << 1) + (self.rst << 2) + (self.psh << 3) + (self.ack << 4) + (self.urg << 5))
     print "Window Size: %d" % socket.htons(5840)
     print "Checksum: %d" % self.checksum
-    print "Urg Pointer: %d" % self.urg_pointer
+    print "Urgent Point: %d" % self.urgp
 
 class ip_header:
-  def __init__(self, length=15, src_adr="127.0.0.1", dest_adr="54.213.206.253", reserved=0):
+  def __init__(self, checksum=0, length=15, src_adr="127.0.0.1", dest_adr="54.213.206.253", reserved=0):
     self.version = 4
     self.ihl = 5
     self.dscp = 0
     self.ecn = 0
-    self.total_length = 0
+    self.total_length = 666
     self.identification = 0
     self.flags = 0
     self.offset = 0
     self.ttl = 0
     self.protocol = socket.IPPROTO_TCP
-    self.checksum = 0
+    self.checksum = checksum
     self.src_adr = socket.inet_aton(src_adr)
     self.dest_adr = socket.inet_aton(dest_adr)
 
@@ -170,7 +171,7 @@ class Connection:
         self.buf = ""
         print self.hostname
 
-    def new_connection(self,hostname):
+    def new_connection(self, hostname):
         
         # set up raw socket
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_TCP)
@@ -194,7 +195,6 @@ class Connection:
         self.sock.close()
 
     def send(self, data):
-        print self.host
         self.sock.sendall(data)
         print "Sent,\t", data
 

@@ -5,6 +5,7 @@ from rqst import tcp_header, ip_header
 import pprint
 import binascii
 from rqst import Connection
+from tcp_client import TCPClient
 
 def httpget(arg):
   url = urlparse(arg)
@@ -13,22 +14,14 @@ def httpget(arg):
   request['get_request'] = get_request
   request['scheme'] = url.scheme
   request['domain'] = url.netloc
-  tcpheader = tcp_header(length=0, src_port=80, dest_port=80, ack=0, seq=0, doff_reserved=5, flags=0, window_size=1, checksum=0, urg_pointer=0)
-  pp = pprint.PrettyPrinter(indent=4)
-  pp.pprint(tcpheader.to_struct())
+  #tcpheader = tcp_header(length=0, src_port=80, dest_port=80, ack=0, seq=0, doff_reserved=5, flags=0, window_size=1, checksum=0, urg_pointer=0)
+  #ipheader = ip_header()
+  #data = ipheader.to_struct() + tcpheader.to_struct() + get_request
 
-  ipheader = ip_header()
-  pp.pprint(ipheader.to_struct())
+  tcpclient = TCPClient(url.netloc, get_request)
+  tcpclient.do_handshake()
 
-  data = ipheader.to_struct() + tcpheader.to_struct() + get_request
-  print "Start"
-  print data
-  print "End"
-
-  connection = Connection()
-  connection.new_connection("gsoeller.com")
-  connection.connect()
-  connection.send(data)
+  
   
 
 if __name__ == '__main__':
