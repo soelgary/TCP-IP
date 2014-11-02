@@ -71,28 +71,104 @@ class Packet:
 
     
 class tcp_header:
-  def __init__(self, length=None, src_port=None, dest_port=None, ack=None, seq=None):
-    self.length = length
-    self.src_port = src_port
-    self.dest_port = dest_port
+  def __init__(self, src_addr, dest_addr, ack=0, syn=0, fin=0, seqn=0, checksum=0):
+    self.src_addr = src_addr
+    self.dest_addr = dest_addr
+    self.srcp = 1234
+    self.dstp = 80
+    self.seqn = seqn
+    self.ackn = 0
+    self.offset = 5
+    self.reserved = 0
+    self.urg = 0
     self.ack = ack
-    self.seq = seq
+    self.psh = 0
+    self.rst = 0
+    self.syn = syn
+    self.fin = fin
+    self.window = socket.htons(5840)
+    self.checksum = 0
+    self.urgp = 0
+    self.payload = ""
+
+  # checksum functions needed for calculation checksum
+  def gen_checksum(self, header):
+    checksum = 0
+    for index in range(0, len(header), 2):
+        complement = (ord(header[index]) << 8) + (ord(header[index+1]) )
+        checksum = checksum + complement
+    checksum = (checksum >> 16) + (checksum & 0xffff);
+    checksum = ~checksum & 0xffff
+    return checksum
+
+  def to_struct(self):
+    data_offset = (self.offset << 4) + 0
+    flags = self.fin + (self.syn << 1) + (self.rst << 2) + (self.psh << 3) + (self.ack << 4) + (self.urg << 5) 
+    header = pack('!HHLLBBHHH',
+                  self.srcp,
+                  self.dstp,
+                  self.seqn,
+                  self.ackn,
+                  data_offset,
+                  flags,
+                  self.window,
+                  self.checksum,
+                  self.urgp)
+    pseudo_header = pack('!4s4sBBH' , socket.inet_aton(self.src_addr) , socket.inet_aton(self.dest_addr) , 0 , socket.IPPROTO_TCP , len(header))
+    check = self.gen_checksum((pseudo_header + header))
+    header = pack('!HHLLBBHHH',
+                  self.srcp,
+                  self.dstp,
+                  self.seqn,
+                  self.ackn,
+                  data_offset,
+                  flags,
+                  self.window,
+                  check,
+                  self.urgp)
+    return header
+
 
   def pprint(self):
     print "TCP Header"
-    print "Source port: %s" % self.src_port
-    print "Destination port: %s" % self.dest_port
-    print "Acknowledgemnet: %s" % self.ack
-    print "Sequence: %s" % self.seq
-    print "TCP Length: %d" % self.length
+    print "Source port: %s" % self.srcp
+    print "Destination port: %s" % self.dstp
+    print "Sequence Number: %s" % self.seqn
+    print "Acknowledgemnet Number: %s" % self.ackn
+    print "Data Offset: %s" % self.offset
+    print "Reserved: %s" % self.reserved
+    print "Flags: %d" % (self.fin + (self.syn << 1) + (self.rst << 2) + (self.psh << 3) + (self.ack << 4) + (self.urg << 5))
+    print "Window Size: %d" % socket.htons(5840)
+    print "Checksum: %d" % self.checksum
+    print "Urgent Point: %d" % self.urgp
+
 class ip_header:
-  def __init__(self,version=None,length=None,ttl=None,protocol=None,src_adr=None,dest_adr=None):
-    self.version = version
-    self.length = length 
-    self.ttl = ttl
-    self.protocol = protocol
-    self.src_adr = src_adr
-    self.dest_adr = dest_adr
+  def __init__(self, checksum=0, length=15, src_adr="127.0.0.1", dest_adr="54.213.206.253", reserved=0):
+    self.version = 4
+    self.ihl = 5
+    self.tos = 0
+    self.total_length = 40
+    self.identification = 54321
+    self.offset = 0
+    self.ttl = 255
+    self.protocol = socket.IPPROTO_TCP
+    self.checksum = 0
+    self.src_adr = socket.inet_aton(src_adr)
+    self.dest_adr = socket.inet_aton(dest_adr)
+
+  def to_struct(self):
+    header = pack("!BBHHHBBH4s4s",
+              (self.version << 4) + self.ihl,
+              self.tos,
+              self.total_length,
+              self.identification,
+              self.offset,
+              self.ttl,
+              self.protocol,
+              self.checksum,
+              self.src_adr,
+              self.dest_adr)
+    return header
 
   def pprint(self):
     print "IP Header"
@@ -116,10 +192,10 @@ class Connection:
         self.buf = ""
         print self.hostname
 
-    def new_connection(self,hostname):
+    def new_connection(self, hostname):
         
         # set up raw socket
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_TCP)
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_RAW)
         # get local ip
         self.host = socket.gethostbyname(socket.gethostname())
 
@@ -140,11 +216,11 @@ class Connection:
         self.sock.close()
 
     def send(self, data):
-        print self.host
         self.sock.sendall(data)
 
     def recv(self):
         # self.buf is a tuple of (packet, ip_address)
-        self.buf = self.sock.recvfrom(65565)
-        p = Packet(self.buf)
-        return self.buf
+        (ret_buf, addres) = self.sock.recvfrom(4096)
+        #p = Packet(self.buf)
+        #print p
+        return ret_buf
