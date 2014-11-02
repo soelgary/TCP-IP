@@ -19,5 +19,11 @@ class TCPClient():
     tcpheader = tcp_header(self.src_addr, self.dest_addr, syn=1).to_struct()
     packet = self.ipheader + tcpheader
     self.connection.send(packet)
-    self.connection.recv()
+    #self.connection.recv()
+    '''
+    wait for the syn/ack
+    send an ack
+    send the data
+    receive the response
+    '''
 

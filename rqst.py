@@ -115,11 +115,7 @@ class tcp_header:
                   self.checksum,
                   self.urgp)
     pseudo_header = pack('!4s4sBBH' , socket.inet_aton(self.src_addr) , socket.inet_aton(self.dest_addr) , 0 , socket.IPPROTO_TCP , len(header))
-    print "Psuedo Header:", unpack('!4s4sBBH', pseudo_header)
-    print pseudo_header + header
-    print unpack('!4s4sBBHHHLLBBHHH', pseudo_header + header)
     check = self.gen_checksum((pseudo_header + header))
-    print check
     header = pack('!HHLLBBHHH',
                   self.srcp,
                   self.dstp,
@@ -130,7 +126,6 @@ class tcp_header:
                   self.window,
                   check,
                   self.urgp)
-    print "Final Header:", unpack('!HHLLBBHHH', header)
     return header
 
 
@@ -173,8 +168,6 @@ class ip_header:
               self.checksum,
               self.src_adr,
               self.dest_adr)
-    print "IP Header:", unpack('!BBHHHBBH4s4s', header)
-
     return header
 
   def pprint(self):
