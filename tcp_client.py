@@ -24,13 +24,13 @@ class TCPClient():
     pp = pprint.PrettyPrinter(indent=4)
     pp.pprint(ipheader)
     pp.pprint(tcpheader)
-    print calcsize('!BBHHHBBH4s4s')
+    print calcsize('!BBHHHBBH4s4sI')
     print calcsize('!HHLLBBHHH')
 
-    print unpack('!BBHHHBBH4s4s', ipheader)
+    print unpack('!BBHHHBBH4s4sI', ipheader)
     print unpack('!HHLLBBHHH', tcpheader)
     
-    #print binascii.hexlify(tcpheader)
+    print binascii.hexlify(tcpheader)
 
     ipchecksum = self.checksum(ipheader + tcpheader)
     tcpchecksum = self.checksum(tcpheader)
@@ -39,9 +39,10 @@ class TCPClient():
     tcpheader = tcp_header(checksum=tcpchecksum, syn=1).to_struct()
     print ipchecksum
     print tcpchecksum
-    print unpack('!BBHHHBBH4s4s', ipheader)
+    print unpack('!BBHHHBBH4s4sI', ipheader)
     print unpack('!HHLLBBHHH', tcpheader)
     self.connection.send(ipheader + tcpheader)
+
 
   # checksum functions needed for calculation checksum
   def checksum(self, msg):

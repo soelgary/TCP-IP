@@ -124,29 +124,31 @@ class ip_header:
     self.version = 4
     self.ihl = 5
     self.dscp = 0
-    self.ecn = 0
-    self.total_length = 666
-    self.identification = 0
+    self.ecn = 3
+    self.total_length = 22
+    self.identification = 123
     self.flags = 0
     self.offset = 0
-    self.ttl = 0
+    self.ttl = 19
     self.protocol = socket.IPPROTO_TCP
     self.checksum = checksum
     self.src_adr = socket.inet_aton(src_adr)
     self.dest_adr = socket.inet_aton(dest_adr)
+    self.options = 0
 
   def to_struct(self):
-    header = pack("!BBHHHBBH4s4s",
+    header = pack("!BBHHHBBH4s4sI",
               (self.version << 4) + self.ihl,
-              (self.dscp << 2) + self.ecn,
-              self.total_length,
+              0,
+              0,
               self.identification,
-              (self.flags << 13) + self.offset,
+              self.offset,
               self.ttl,
               self.protocol,
               self.checksum,
               self.src_adr,
-              self.dest_adr)
+              self.dest_adr,
+              self.options)
     return header
 
   def pprint(self):
@@ -202,4 +204,5 @@ class Connection:
         # self.buf is a tuple of (packet, ip_address)
         self.buf = self.sock.recvfrom(65565)
         p = Packet(self.buf)
+        print p
         return self.buf
