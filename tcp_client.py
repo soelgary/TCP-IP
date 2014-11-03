@@ -15,15 +15,26 @@ class TCPClient():
   def do_handshake(self):
     self.connection.new_connection(self.dest_addr)
     self.connection.connect()
+    self.send_ack(self.rec_syn_ack())
+    # done. now send all the datas
 
+  def send(self, packet):
+    self.connection.send(packet)
+
+  def send_syn(self):
     tcpheader = tcp_header(src_addr=self.src_addr, dest_addr=self.dest_addr, syn=1).to_struct()
     packet = self.ipheader + tcpheader
-    self.connection.send(packet)
-    self.connection.recv()
-    '''
-    wait for the syn/ack
-    send an ack
-    send the data
-    receive the response
-    '''
+    self.send(packet)
+
+  def send_ack(self, packet):
+    pass
+
+  def rec_syn_ack(self):
+    received_syn_ack = False
+    while not received_syn_ack:
+      packet = self.connection.recv()
+      ack = packet.tcp_header.ack 
+      syn = packet.tcp_header.syn
+      if syn and ack:
+        return packet
 

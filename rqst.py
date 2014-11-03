@@ -36,8 +36,8 @@ class Packet:
       self.ip_header = ip_hdr
       #ip_hdr.pprint()
       tcp_hdr = tcp_header().parse(data[0], self.ip_header.total_length)
-      tcp_hdr.pprint()
-      #self.tcp_header = tcp_hdr
+      #tcp_hdr.pprint()
+      self.tcp_header = tcp_hdr
 
       #self.header_size = self.ip_header.length + self.tcp_header.length
       #self.data_size = len(data[0]) - self.header_size
@@ -146,7 +146,7 @@ class tcp_header:
     print "Ack: %d" % self.ack
     print "Urg: %d" % self.urg
     print "Ece: %d" % self.ece
-    print "Cwr: %d" % self.cwr
+    print "Cwr: %d" % self.cwr 
     print "Window Size: %d" % socket.htons(5840)
     print "Checksum: %d" % self.checksum
     print "Urgent Point: %d" % self.urgp
@@ -257,10 +257,9 @@ class Connection:
 
     def send(self, data):
         self.sock.sendall(data)
-        print sys.getsizeof(self.buf)
 
     def recv(self):
         # self.buf is a tuple of (packet, ip_address)
         self.buf = self.sock_in.recvfrom(65565)
-        print sys.getsizeof(self.buf)
         p = Packet(data=self.buf,log=True)
+        return p
