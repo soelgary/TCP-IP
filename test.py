@@ -1,6 +1,7 @@
-import rqst, time
+import time
+from rqst.connection import TCP_Connection
 
-c=rqst.TCP_Connection()
+c=TCP_Connection()
 c.new_connection("fake")
 
 for i in range(0,3):
