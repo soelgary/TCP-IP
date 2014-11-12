@@ -33,14 +33,19 @@ class Packet:
         tcp_hdr = tcp_header().parse(data[0], self.ip_header.length)
         self.tcp_header = tcp_hdr
 
-        print str(tcp_hdr)
-
-
         self.header_size = self.ip_header.length + self.tcp_header.length
         self.data_size = len(data[0]) - self.header_size
         self.raw_data = data[0][self.header_size:]
 
         return self
+
+    def __str__(self):
+        out = ""
+        out += str(self.ip_header)
+        out += "\n"
+        out += str(self.tcp_header)
+        out += "\n"
+        return out
 
     def pprint(self):
       print self.ip_header
@@ -55,10 +60,10 @@ class tcp_header:
     self.src_port = src_port
     self.dest_port = dest_port
     self.ack = ack
-    self.psh = 0
-    self.rst = 0
-    self.syn = syn
-    self.fin = fin
+    #elf.psh = 0
+    #elf.rst = 0
+    #elf.syn = syn
+    #elf.fin = fin
     self.window = socket.htons(5840)
     self.checksum = 0
     self.urgp = 0
@@ -293,8 +298,7 @@ class TCP_Connection:
           currently logs all packets to stdout
         """
         # self.buf is a tuple of (packet, ip_address)
-        self.buf = self.sock.recvfrom(65565)
-        p = Packet(data=self.buf,log=True)
-        print p
-        return self.buf
+        self.buf = self.sock_in.recvfrom(65565)
+        p = Packet(data=self.buf)
+        return p
 
