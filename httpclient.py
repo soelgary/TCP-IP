@@ -15,15 +15,8 @@ def httpget(arg):
   request['scheme'] = url.scheme
   request['domain'] = url.netloc
 
-  tcpclient = TCPClient('192.168.1.1', get_request)
+  tcpclient = TCPClient('104.131.119.105',80, get_request)
   tcpclient.do_handshake()
-
-  #tcpheader = tcp_header(length=0, src_port=80, dest_port=80,\
-  #       ack=0, seq=0, doff_reserved=5, flags=0, window_size=1, checksum=0, urg_pointer=0)
-
-  #ipheader = ip_header()
-  #data = ipheader.to_struct() + tcpheader.to_struct() + get_request
-
 
 if __name__ == '__main__':
   httpget(sys.argv[1])

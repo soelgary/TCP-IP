@@ -25,7 +25,7 @@ class ip_header:
 
   def construct(self):
     header = pack("!BBHHHBBH4s4s",
-              (self.version << 4) + self.length,
+              (self.version << 4) + 5,
               self.tos,
               self.total_length,
               self.identification,
@@ -42,7 +42,7 @@ class ip_header:
       Parses and returns an ip_header object
       from the packets data
     """
-    # header length is 20 
+    # header length is 20
     ip_hdr = packet[0:20]
 
     # unpack ip_head see:
@@ -52,7 +52,7 @@ class ip_header:
     # extract version and header length
     v_hl = ip_header_data[0]
     self.version = v_hl >> 4
-    self.length = (v_hl >> 4) * 4
+    self.length = (v_hl & 0xF) * 4
 
     # extract ttl and protocol
     self.ttl = ip_header_data[5]

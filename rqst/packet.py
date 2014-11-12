@@ -25,19 +25,34 @@ class Packet:
         if log:
             self.pprint()
 
-    def construct(self, data):
+    def construct(self, message=None):
+        if message is None:
+            message = ""
         tcph = self.tcp_header.construct()
         iph = self.ip_header.construct()
-        tcp_length = len(tcph) + len(data)
+        tcp_length = len(tcph) + len(message)
         psh = pack('!4s4sBBH',\
                self.tcp_header.src_addr,\
                self.tcp_header.dest_addr,\
                0, self.ip_header.protocol, tcp_length)
-        psh = psh + tcph + data
-        tcp_check = tcp_header.gchecksum(psh)
-        tcp_header.checksum = tcp_check
-        tcph = tcp_header.construct()
-        return iph + tcph + data
+        psh = psh + tcph + message
+        tcp_check = self.tcp_header.gchecksum(psh)
+        self.tcp_header.checksum = tcp_check
+
+        print (self.tcp_header.src_port, self.tcp_header.dest_port, self.tcp_header.seq, self.tcp_header.ack_seq, self.tcp_header.offset, self.tcp_header.flags, self.tcp_header.window, self.tcp_header.checksum, self.tcp_header.urgp)
+
+        tcph = pack('!HHLLBBH',\
+                self.tcp_header.src_port,\
+                self.tcp_header.dest_port,\
+                self.tcp_header.seq,\
+                self.tcp_header.ack_seq,\
+                self.tcp_header.offset,\
+                self.tcp_header.flags,\
+                self.tcp_header.window) +\
+                pack('H',self.tcp_header.checksum) +\
+                pack('!H',self.tcp_header.urgp)
+
+        return iph + tcph + message
 
     def parse(self, data):
         """

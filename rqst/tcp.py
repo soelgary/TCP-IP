@@ -7,7 +7,7 @@ class tcp_header:
   """
     Provides an interface to construct and parse TCP headers
   """
-  def __init__(self, length=None, src_port=54321, dest_port=80,\
+  def __init__(self, length=None, src_port=1234, dest_port=80,\
         src_addr=None, dest_addr=None,\
         ack_seq=0, seq=0, syn=0, fin=0, checksum=0):
 
@@ -43,13 +43,14 @@ class tcp_header:
     self.flags = self.fin + (self.syn << 1) + \
         (self.rst << 2) + (self.psh << 3) + (self.ack << 4) + (self.urg << 5)
 
-    # the ! in the pack format string means network order
     print (self.src_port, self.dest_port, self.seq, self.ack_seq, self.offset, self.flags, self.window, self.checksum, self.urgp)
-    header = pack('!HHLLBBH',\
+
+    # the ! in the pack format string means network order
+    header = pack('!HHLLBBHHH',\
         self.src_port, self.dest_port,\
         self.seq, self.ack_seq,\
         self.offset, self.flags,\
-        self.window) + pack('H',self.checksum) + pack('!H',self.urgp)
+        self.window, self.checksum, self.urgp)
 
     return header
 
@@ -72,7 +73,8 @@ class tcp_header:
       w = ord(msg[i]) + (ord(msg[i+1]) << 8)
       s = s + w
     s = (s >> 16) + (s & 0xffff)
-    s = s + (s >> 16);
+    s = s + (s >> 16)
+    return s
 
   def parse(self, packet, offset):
     """
