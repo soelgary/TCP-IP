@@ -7,15 +7,38 @@ class ip_header:
   """
     Provides a interface for constructing and parsing ip headers
   """
-  def __init__(self, version=None, length=None, ttl=None, \
-          protocol=None, src_adr=None, dest_adr=None):
+  def __init__(self, version=4, length=None, ttl=None, \
+          protocol=socket.IPPROTO_TCP, src_adr="127.0.0.1", dest_adr="54.213.206.253"):
 
     self.version = version
     self.length = length
     self.ttl = ttl
     self.protocol = protocol
-    self.src_adr = src_adr
-    self.dest_adr = dest_adr
+    self.src_adr = socket.inet_aton(src_adr)
+    self.dest_adr = socket.inet_aton(dest_adr)
+
+    self.ihl = 5
+    self.tos = 0
+    self.total_length = 40
+    self.identification = 54321
+    self.offset = 0
+    self.ttl = 255
+    self.checksum = 0
+
+
+  def to_struct(self):
+    header = pack("!BBHHHBBH4s4s",
+              (self.version << 4) + self.ihl,
+              self.tos,
+              self.total_length,
+              self.identification,
+              self.offset,
+              self.ttl,
+              self.protocol,
+              self.checksum,
+              self.src_adr,
+              self.dest_adr)
+    return header
 
   def parse(self, packet):
     """

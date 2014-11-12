@@ -7,20 +7,35 @@ class tcp_header:
   """
     Provides an interface to construct and parse TCP headers
   """
-  def __init__(self, length=None, src_port=None, dest_port=None, ack=None, seq=None):
+  def __init__(self, length=None, src_port=None, dest_port=None,\
+  src_addr=None, dest_addr=None,\
+  ack=0, seq=None, syn=0, fin=0, seqn=0, checksum=0):
+
     self.length = length
     self.src_port = src_port
     self.dest_port = dest_port
     self.ack = ack
     self.seq = seq
-    #elf.psh = 0
-    #elf.rst = 0
-    #elf.syn = syn
-    #elf.fin = fin
+    self.psh = 0
+    self.rst = 0
+    self.syn = syn
+    self.fin = fin
     self.window = socket.htons(5840)
-    self.checksum = 0
+    self.checksum = checksum
     self.urgp = 0
     self.payload = ""
+
+    self.src_addr = src_addr
+    self.dest_addr = dest_addr
+
+    self.srcp = 1234
+    self.dstp = 80
+    self.seqn = seqn
+    self.ackn = 0
+    self.offset = 5
+    self.reserved = 0
+    self.urg = 0
+
 
   def gen_checksum(self, header):
     """
@@ -40,6 +55,7 @@ class tcp_header:
     """
 
     data_offset = (self.offset << 4) + 0
+    print (self.ack, self.fin, self.syn, self.rst, self.psh, self.urg)
 
     flags = self.fin + \
             (self.syn << 1) + \
@@ -80,7 +96,7 @@ class tcp_header:
                   self.urgp)
     return header
 
-  def parse(self, packet, offset):
+  def parse2(self, packet, offset):
     """
       Parse tcp header out of raw packet data
       offset is the size of the ip header
@@ -124,7 +140,10 @@ class tcp_header:
     data = pack('!HHLLBBHHH',tcp_header_data)
     return data
 
-  def parse2(self, packet, offset):
+  def parse(self, packet, offset):
+    """
+      Not sure why there are two of these
+    """
     tcp_header_data = unpack('!HHLLBBHHH', packet[offset:offset+20])
 
     # Get various field data

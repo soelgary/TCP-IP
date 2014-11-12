@@ -1,6 +1,4 @@
-import socket
-import itertools
-import re
+import socket, itertools, re, sys
 from struct import *
 from rqst.ip import ip_header
 from rqst.tcp import tcp_header
