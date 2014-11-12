@@ -7,9 +7,9 @@ class tcp_header:
   """
     Provides an interface to construct and parse TCP headers
   """
-  def __init__(self, length=None, src_port=None, dest_port=None,\
+  def __init__(self, length=None, src_port=54321, dest_port=80,\
         src_addr=None, dest_addr=None,\
-        ack_seq=0, seq=None, syn=0, fin=0, checksum=0):
+        ack_seq=0, seq=0, syn=0, fin=0, checksum=0):
 
     # (doff >> 4) * 4
     self.length = length
@@ -41,14 +41,15 @@ class tcp_header:
 
   def construct(self):
     self.flags = self.fin + (self.syn << 1) + \
-        (self.rst << 2) + (self.psh <<3) + (self.ack << 4) + (self.urg << 5)
+        (self.rst << 2) + (self.psh << 3) + (self.ack << 4) + (self.urg << 5)
 
     # the ! in the pack format string means network order
-    header = pack('!HHLLBBHHH',\
+    print (self.src_port, self.dest_port, self.seq, self.ack_seq, self.offset, self.flags, self.window, self.checksum, self.urgp)
+    header = pack('!HHLLBBH',\
         self.src_port, self.dest_port,\
         self.seq, self.ack_seq,\
-        self.offset_res, self.flags,\
-        self.window, self.checksum, self.urgp)
+        self.offset, self.flags,\
+        self.window) + pack('H',self.checksum) + pack('!H',self.urgp)
 
     return header
 
@@ -115,3 +116,6 @@ class tcp_header:
     out += "Sequence: %s\n" % self.seq
     out += "TCP Length: %d\n" % self.length
     return out
+
+
+

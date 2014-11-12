@@ -15,7 +15,7 @@ def httpget(arg):
   request['scheme'] = url.scheme
   request['domain'] = url.netloc
 
-  tcpclient = TCPClient(url.netloc, get_request)
+  tcpclient = TCPClient('192.168.1.1', get_request)
   tcpclient.do_handshake()
 
   #tcpheader = tcp_header(length=0, src_port=80, dest_port=80,\
