@@ -33,6 +33,9 @@ class Packet:
         tcp_hdr = tcp_header().parse(data[0], self.ip_header.length)
         self.tcp_header = tcp_hdr
 
+        print str(tcp_hdr)
+
+
         self.header_size = self.ip_header.length + self.tcp_header.length
         self.data_size = len(data[0]) - self.header_size
         self.raw_data = data[0][self.header_size:]
@@ -292,5 +295,6 @@ class TCP_Connection:
         # self.buf is a tuple of (packet, ip_address)
         self.buf = self.sock.recvfrom(65565)
         p = Packet(data=self.buf,log=True)
+        print p
         return self.buf
 
