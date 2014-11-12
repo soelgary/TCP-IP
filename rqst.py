@@ -48,8 +48,11 @@ class Packet:
     def pprint(self):
       print self.ip_header
       print self.tcp_header
-    
+
 class tcp_header:
+  """
+   TCP Header convenience class
+  """
   def __init__(self, src_addr=None, dest_addr=None, ack=0, syn=0, fin=0, seqn=0, checksum=0):
     self.src_addr = src_addr
     self.dest_addr = dest_addr
@@ -70,8 +73,10 @@ class tcp_header:
     self.urgp = 0
     self.payload = ""
 
-  # checksum functions needed for calculation checksum
   def gen_checksum(self, header):
+    """
+      checksum functions needed for calculation checksum
+    """
     checksum = 0
     for index in range(0, len(header), 2):
         complement = (ord(header[index]) << 8) + (ord(header[index+1]) )
@@ -81,8 +86,16 @@ class tcp_header:
     return checksum
 
   def to_struct(self):
+
     data_offset = (self.offset << 4) + 0
-    flags = self.fin + (self.syn << 1) + (self.rst << 2) + (self.psh << 3) + (self.ack << 4) + (self.urg << 5) 
+
+    flags = self.fin + \
+            (self.syn << 1) + \
+            (self.rst << 2) + \
+            (self.psh << 3) + \
+            (self.ack << 4) + \
+            (self.urg << 5)
+
     header = pack('!HHLLBBHHH',
                   self.srcp,
                   self.dstp,
@@ -93,8 +106,16 @@ class tcp_header:
                   self.window,
                   self.checksum,
                   self.urgp)
-    pseudo_header = pack('!4s4sBBH' , socket.inet_aton(self.src_addr) , socket.inet_aton(self.dest_addr) , 0 , socket.IPPROTO_TCP , len(header))
+
+    pseudo_header = pack('!4s4sBBH',\
+            socket.inet_aton(self.src_addr),\
+            socket.inet_aton(self.dest_addr),\
+            0,\
+            socket.IPPROTO_TCP,\
+            len(header))
+
     check = self.gen_checksum((pseudo_header + header))
+
     header = pack('!HHLLBBHHH',
                   self.srcp,
                   self.dstp,
@@ -108,6 +129,7 @@ class tcp_header:
     return header
 
   def parse(self, packet, offset):
+
     tcp_header_data = unpack('!HHLLBBHHH', packet[offset:offset+20])
     # Get various field data
     self.srcp = tcp_header_data[0]
@@ -152,7 +174,10 @@ class tcp_header:
     print "Urgent Point: %d" % self.urgp
 
 class ip_header:
-  def __init__(self, checksum=0, length=15, src_adr="127.0.0.1", dest_adr="54.213.206.253", reserved=0):
+  def __init__(self,\
+          checksum=0, length=15, src_adr="127.0.0.1",\
+          dest_adr="54.213.206.253", reserved=0):
+
     self.version = 4
     self.ihl = 5
     self.tos = 0
@@ -190,7 +215,7 @@ class ip_header:
     # unpack ip_head see:
     #   https://docs.python.org/2/library/struct.html#format-characters
     ip_header_data = unpack('!BBHHHBBH4s4s', ip_hdr)
-   
+
     # extract version and header length
     v_hl = ip_header_data[0]
     self.version = v_hl >> 4
@@ -200,7 +225,7 @@ class ip_header:
     # extract ttl and protocol
     self.ttl = ip_header_data[5]
     self.protocol = ip_header_data[6]
-    
+
     # get source and destination address
     self.src_adr = socket.inet_ntoa(ip_header_data[8])
     self.dest_adr = socket.inet_ntoa(ip_header_data[9])
@@ -231,7 +256,7 @@ class Connection:
         print self.hostname
 
     def new_connection(self, hostname):
-        
+
         # set up raw socket
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_RAW)
         self.sock_in = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_TCP)
