@@ -7,28 +7,25 @@ class ip_header:
   """
     Provides a interface for constructing and parsing ip headers
   """
-  def __init__(self, version=4, length=None, ttl=None, \
-          protocol=socket.IPPROTO_TCP, src_adr="127.0.0.1", dest_adr="54.213.206.253"):
+  def __init__(self, version=4, length=5, ttl=255, \
+          protocol=socket.IPPROTO_TCP,\
+          src_adr="192.168.1.211", dest_adr="192.168.1.1"):
 
-    self.version = version
     self.length = length
+    self.version = version
+    self.tos = 0
+    self.total_length = 0 # kernel should handle
+    self.identification = 54321
+    self.offset = 0 # frag_off
     self.ttl = ttl
     self.protocol = protocol
+    self.checksum = 0 # kernel should handle
     self.src_adr = socket.inet_aton(src_adr)
     self.dest_adr = socket.inet_aton(dest_adr)
 
-    self.ihl = 5
-    self.tos = 0
-    self.total_length = 40
-    self.identification = 54321
-    self.offset = 0
-    self.ttl = 255
-    self.checksum = 0
-
-
-  def to_struct(self):
+  def construct(self):
     header = pack("!BBHHHBBH4s4s",
-              (self.version << 4) + self.ihl,
+              (self.version << 4) + self.length,
               self.tos,
               self.total_length,
               self.identification,
@@ -66,17 +63,6 @@ class ip_header:
     self.dest_adr = socket.inet_ntoa(ip_header_data[9])
 
     return self
-
-  def construct(self):
-    ip_hdr_data = []
-    vhl = self.version << 4 + (self.length / 4) << 4
-    ip_hdr_data[0] = vhl
-    ip_hdr_data[5] = self.ttl
-    ip_hdr_data[6] = self.protocol
-    ip_hdr_data[8] = self.src_adr
-    ip_hdr_data[9] = self.dest_adr
-    data = pack('!BBHHHBBH4s4s', ip_hdr_data)
-    return data
 
   def __str__(self):
     out = ""

@@ -25,6 +25,20 @@ class Packet:
         if log:
             self.pprint()
 
+    def construct(self, data):
+        tcph = self.tcp_header.construct()
+        iph = self.ip_header.construct()
+        tcp_length = len(tcph) + len(data)
+        psh = pack('!4s4sBBH',\
+               self.tcp_header.src_addr,\
+               self.tcp_header.dest_addr,\
+               0, self.ip_header.protocol, tcp_length)
+        psh = psh + tcph + data
+        tcp_check = tcp_header.gchecksum(psh)
+        tcp_header.checksum = tcp_check
+        tcph = tcp_header.construct()
+        return iph + tcph + data
+
     def parse(self, data):
         """
            Parses tcp and ip headers from the packet

@@ -46,9 +46,8 @@ class TCP_Connection:
           sends data over the TCP connection
           data will need to have valid HTTP headers
         """
-        print self.host
-        self.sock.sendall(data)
-        print sys.getsizeof(self.buf)
+        print "Attempting to send packet of size %d to %s" % (len(data), self.host)
+        self.sock.sendto(data, (self.host, 0))
 
     def recv(self):
         """
