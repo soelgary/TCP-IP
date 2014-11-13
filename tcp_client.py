@@ -19,6 +19,7 @@ class bcolors:
     @staticmethod
     def wprint(data):
         print "%s%s%s" % (bcolors.WARN, str(data), bcolors.END)
+
 class TCPClient():
   def __init__(self, destination, port, data):
     self.dest_addr = destination
@@ -46,7 +47,6 @@ class TCPClient():
       exit()
 
     print syn_ack_packet
-    next_seqn = syn_ack_packet.tcp_header.ackn
     bcolors.cprint("recieved")
 
     bcolors.cprint('sending ack')
@@ -54,12 +54,14 @@ class TCPClient():
 
 
     bcolors.cprint('begining packet capture')
-    new_packet = 1
-    while new_packet is not None:
-        new_packet = self.recv_data()
+    while True:
+        new_packet = 1
+        while new_packet is not None:
+            new_packet = self.recv_data()
+
 
     bcolors.cprint('sending data')
-    self.send_data()
+    #self.send_data()
 
   def recv_data(self):
     start = datetime.datetime.now()
@@ -72,7 +74,7 @@ class TCPClient():
 
         # recieved reset packet
         if rec_packet.tcp_header.rst == 1:
-            bcolors.wprint("Recieved reset flag, something done goofed")
+            bcolors.wprint("Recieved reset flag, something done goofed, i think this is because the local port is closed")
             return None
 
         return rec_packet
@@ -81,7 +83,7 @@ class TCPClient():
 
   def send_data(self):
     tcpheader = tcp_header(src_addr=self.src_addr, dest_addr=self.dest_addr,
-            seqn=2, payload=self.data)
+            seqn=1, payload=self.data)
     p = Packet()
     p.tcp_header = tcpheader
     p.ip_header = self.ipheader

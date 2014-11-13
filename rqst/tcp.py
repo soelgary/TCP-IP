@@ -9,7 +9,7 @@ class tcp_header:
 
     self.src_addr = src_addr
     self.dest_addr = dest_addr
-    self.srcp = 1234
+    self.srcp = 12345
     self.dstp = 80
     self.seqn = seqn
     self.ackn = ackn
@@ -121,7 +121,7 @@ class tcp_header:
     out+= "Source port: %s\n" % self.srcp
     out+= "Destination port: %s\n" % self.dstp
     out+= "Sequence Number: %s\n" % self.seqn
-    out+= "Acknowledgemnet Number: %s\n" % self.ackn
+    out+= "Acknowledgement Number: %s\n" % self.ackn
     out+= "Data Offset: %s\n" % self.offset
     out+= "Reserved: %s\n" % self.reserved
     out+= "Fin: %d\n" % self.fin

@@ -67,5 +67,5 @@ class ip_header:
     out+= "TTL:\t%d\n" % self.ttl
     out+= "Protocol:\t%d\n" % self.protocol
     out+= "Source address:\t%s\n" % self.src_adr
-    out+= "Destination address:\t%s" % self.dest_adr
+    out+= "Destination address:\t%s\n" % self.dest_adr
     return out
