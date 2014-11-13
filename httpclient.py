@@ -6,6 +6,7 @@ from rqst.connection import TCP_Connection
 from rqst.tcp import tcp_header
 from rqst.ip import ip_header
 from tcp_client import TCPClient
+import socket
 
 def httpget(arg):
   url = urlparse(arg)
@@ -15,7 +16,7 @@ def httpget(arg):
   request['scheme'] = url.scheme
   request['domain'] = url.netloc
 
-  tcpclient = TCPClient('104.131.119.105',80, get_request)
+  tcpclient = TCPClient(socket.gethostbyname(url.netloc),80, get_request)
   tcpclient.do_handshake()
 
 if __name__ == '__main__':

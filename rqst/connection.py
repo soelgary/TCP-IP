@@ -29,7 +29,7 @@ class TCP_Connection:
           Attempts to open a connection to given hostname port
         """
         try:
-            #self.sock.connect((self.hostname, self.port))
+            self.sock.connect((self.hostname, self.port))
             print 'connected to ' + self.hostname
         except socket.gaierror as e:
             print("Recieved error when connecting to " + str((self.hostname, self.port)))
@@ -48,7 +48,7 @@ class TCP_Connection:
           data will need to have valid HTTP headers
         """
         print "Attempting to send packet of size %d to %s" % (len(data), self.hostname)
-        self.sock.sendto(data,(self.hostname,0))
+        self.sock.sendall(data)
 
     def recv(self):
         """
