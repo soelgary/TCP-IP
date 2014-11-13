@@ -14,8 +14,8 @@ class ip_header:
     self.ttl = 255
     self.protocol = socket.IPPROTO_TCP
     self.checksum = 0
-    self.src_adr = socket.inet_aton(src_adr)
-    self.dest_adr = socket.inet_aton(dest_adr)
+    self.src_adr = src_adr
+    self.dest_adr = dest_adr
 
   def construct(self):
     header = pack("!BBHHHBBH4s4s",
@@ -27,8 +27,8 @@ class ip_header:
               self.ttl,
               self.protocol,
               self.checksum,
-              self.src_adr,
-              self.dest_adr)
+              socket.inet_aton(self.src_adr),
+              socket.inet_aton(self.dest_adr))
     return header
 
   def parse(self, packet):
@@ -67,5 +67,5 @@ class ip_header:
     out+= "TTL:\t%d\n" % self.ttl
     out+= "Protocol:\t%d\n" % self.protocol
     out+= "Source address:\t%s\n" % self.src_adr
-    out+= "Destination address:\t%s\n" % self.dest_adr
+    out+= "Destination address:\t%s" % self.dest_adr
     return out

@@ -11,7 +11,7 @@ class TCP_Connection:
     def __init__(self):
       self.BUFFER_SIZE = (2**16)
 
-    def new_connection(self, hostname, port):
+    def build_connection(self, hostname, port):
       # set up raw socket
       self.sock = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_RAW)
       # only works with ipproto tcp ....
@@ -23,6 +23,7 @@ class TCP_Connection:
       self.buf = ""
       self.hostname = hostname
       self.connect()
+      return self
 
     def connect(self):
         """

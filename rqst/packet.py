@@ -20,12 +20,12 @@ class Packet:
       self.tcp_header = None
       self.ip_address = None
       self.header_size = 0
-      self.data_size = 0
 
       if data is not None:
           self.parse(data)
 
     def construct(self):
+      self.header_size = self.ip_header.total_length + self.tcp_header.length
       return self.ip_header.construct() + self.tcp_header.construct()
 
     def parse(self, data):
@@ -34,13 +34,14 @@ class Packet:
         allows access through objects fields
       """
       self.ip_address = data[1]
-      ip_hdr = ip_header().parse(data[0])
-      self.ip_header = ip_hdr
-      tcp_hdr = tcp_header().parse(data[0], self.ip_header.total_length)
-      self.tcp_header = tcp_hdr
+
+      self.ip_header = ip_header().parse(data[0])
+      self.tcp_header = tcp_header().parse(data[0], self.ip_header.total_length)
+      self.header_size = self.ip_header.total_length + self.tcp_header.length
 
     def __str__(self):
       out = ""
+      out += "Header Size: %d\n" % self.header_size
       out += str(self.ip_header)
       out += str(self.tcp_header)
       return out

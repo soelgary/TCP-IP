@@ -25,6 +25,7 @@ class tcp_header:
     self.checksum = 0
     self.urgp = 0
     self.payload = payload
+    self.length = 0
 
   def gen_checksum(self, header):
     """
@@ -131,6 +132,6 @@ class tcp_header:
     out+= "Urg: %d\n" % self.urg
     out+= "Window Size: %d\n" % socket.htons(5840)
     out+= "Checksum: %d\n" % self.checksum
-    out+= "Urgent Point: %d\n" % self.urgp
+    out+= "Urgent Point: %d" % self.urgp
     return out
 
