@@ -4,7 +4,9 @@ import re
 from struct import *
 
 class tcp_header:
-  def __init__(self, src_addr=None, dest_addr=None, ack=0, syn=0, fin=0, seqn=0, checksum=0, ackn=0, payload=""):
+  def __init__(self, src_addr=None, dest_addr=None,
+          ack=0, syn=0, fin=0, seqn=0, checksum=0, ackn=0, payload=""):
+
     self.src_addr = src_addr
     self.dest_addr = dest_addr
     self.srcp = 1234
@@ -24,8 +26,10 @@ class tcp_header:
     self.urgp = 0
     self.payload = payload
 
-  # checksum functions needed for calculation checksum
   def gen_checksum(self, header):
+    """
+      checksum functions needed for calculation checksum
+    """
     # if header is odd add padding
     if len(header) % 2 != 0:
         header = header + '0'
@@ -89,6 +93,7 @@ class tcp_header:
     self.ackn = tcp_header_data[3]
     self.doff_reserved = tcp_header_data[4]
     self.length = (self.doff_reserved >> 4) * 4
+    # parse header data
     flags = tcp_header_data[5]
     self.fin = (flags & 1)
     self.syn = (flags & 2) >> 1
@@ -103,23 +108,29 @@ class tcp_header:
     self.urgp = tcp_header_data[8]
     return self
 
+  def __str__(self):
+    """
+      Overrides string method to allow string casting
+      to return this
 
-  def pprint(self):
-    print "TCP Header"
-    print "Source port: %s" % self.srcp
-    print "Destination port: %s" % self.dstp
-    print "Sequence Number: %s" % self.seqn
-    print "Acknowledgemnet Number: %s" % self.ackn
-    print "Data Offset: %s" % self.offset
-    print "Reserved: %s" % self.reserved
-    print "Fin: %d" % self.fin
-    print "Syn: %d" % self.syn
-    print "Rst: %d" % self.rst
-    print "Psh: %d" % self.psh
-    print "Ack: %d" % self.ack
-    print "Urg: %d" % self.urg
-    #print "Ece: %d" % self.ece
-    #print "Cwr: %d" % self.cwr
-    print "Window Size: %d" % socket.htons(5840)
-    print "Checksum: %d" % self.checksum
-    print "Urgent Point: %d" % self.urgp
+      print packet instead of packet.pprint()
+    """
+    out = ""
+    out+= "TCP Header"
+    out+= "Source port: %s\n" % self.srcp
+    out+= "Destination port: %s\n" % self.dstp
+    out+= "Sequence Number: %s\n" % self.seqn
+    out+= "Acknowledgemnet Number: %s\n" % self.ackn
+    out+= "Data Offset: %s\n" % self.offset
+    out+= "Reserved: %s\n" % self.reserved
+    out+= "Fin: %d\n" % self.fin
+    out+= "Syn: %d\n" % self.syn
+    out+= "Rst: %d\n" % self.rst
+    out+= "Psh: %d\n" % self.psh
+    out+= "Ack: %d\n" % self.ack
+    out+= "Urg: %d\n" % self.urg
+    out+= "Window Size: %d\n" % socket.htons(5840)
+    out+= "Checksum: %d\n" % self.checksum
+    out+= "Urgent Point: %d\n" % self.urgp
+    return out
+

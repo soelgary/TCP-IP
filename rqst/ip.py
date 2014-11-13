@@ -42,7 +42,7 @@ class ip_header:
     # unpack ip_head see:
     #   https://docs.python.org/2/library/struct.html#format-characters
     ip_header_data = unpack('!BBHHHBBH4s4s', ip_hdr)
-   
+
     # extract version and header length
     v_hl = ip_header_data[0]
     self.version = v_hl >> 4
@@ -52,19 +52,20 @@ class ip_header:
     # extract ttl and protocol
     self.ttl = ip_header_data[5]
     self.protocol = ip_header_data[6]
-    
+
     # get source and destination address
     self.src_adr = socket.inet_ntoa(ip_header_data[8])
     self.dest_adr = socket.inet_ntoa(ip_header_data[9])
 
-    #self.pprint()
     return self
 
-  def pprint(self):
-    print "IP Header"
-    print "Version:\t", self.version
-    print "Length:\t", self.total_length
-    print "TTL:\t", self.ttl
-    print "Protocol:\t", self.protocol
-    print "Source address:\t", self.src_adr
-    print "Destination address:\t", self.dest_adr
+  def __str__(self):
+    out = ""
+    out+= "IP Header"
+    out+= "Version:\t%d\n" % self.version
+    out+= "Length:\t%d\n" % self.total_length
+    out+= "TTL:\t%d\n" % self.ttl
+    out+= "Protocol:\t%d\n" % self.protocol
+    out+= "Source address:\t%s\n" % self.src_adr
+    out+= "Destination address:\t%s\n" % self.dest_adr
+    return out
