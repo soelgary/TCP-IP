@@ -24,7 +24,7 @@ class TCPClient():
     self.connection.connect()
 
     self.send_syn()
-
+    
     syn_ack_packet = self.recv_syn_ack()
     if syn_ack_packet == None:
       print "timeout"
@@ -33,8 +33,7 @@ class TCPClient():
     syn_ack_packet.pprint()
 
     self.send_ack(syn_ack_packet)
-  
-    #self.send_data()    
+    self.send_data()    
 
     '''
     for i in range(0,10):
@@ -59,7 +58,7 @@ class TCPClient():
     self.connection.send(pp)
 
   def send_ack(self, packet):
-    tcpheader = tcp_header(src_addr=self.src_addr, dest_addr=self.dest_addr, ack=1, seqn=1, ackn=1)
+    tcpheader = tcp_header(src_addr=self.src_addr, dest_addr=self.dest_addr, ack=1, seqn=1, ackn=packet.tcp_header.seqn)
     p = Packet()
     p.tcp_header = tcpheader
     p.ip_header = self.ipheader
