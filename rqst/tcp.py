@@ -26,6 +26,9 @@ class tcp_header:
 
   # checksum functions needed for calculation checksum
   def gen_checksum(self, header):
+    # if header is odd add padding
+    if len(header) % 2 != 0:
+        header = header + '0'
     checksum = 0
     for index in range(0, len(header), 2):
         complement = (ord(header[index]) << 8) + (ord(header[index+1]) )
@@ -36,7 +39,14 @@ class tcp_header:
 
   def construct(self):
     data_offset = (self.offset << 4) + 0
-    flags = self.fin + (self.syn << 1) + (self.rst << 2) + (self.psh << 3) + (self.ack << 4) + (self.urg << 5) 
+
+    flags = self.fin +\
+            (self.syn << 1) +\
+            (self.rst << 2) +\
+            (self.psh << 3) +\
+            (self.ack << 4) +\
+            (self.urg << 5)
+
     header = pack('!HHLLBBHHH',
                   self.srcp,
                   self.dstp,
@@ -47,8 +57,16 @@ class tcp_header:
                   self.window,
                   self.checksum,
                   self.urgp)
-    pseudo_header = pack('!4s4sBBH' , socket.inet_aton(self.src_addr) , socket.inet_aton(self.dest_addr) , 0 , socket.IPPROTO_TCP , len(header))
+
+    pseudo_header = pack('!4s4sBBH',
+            socket.inet_aton(self.src_addr),
+            socket.inet_aton(self.dest_addr),
+            0,
+            socket.IPPROTO_TCP,
+            len(header))
+
     check = self.gen_checksum((pseudo_header + header + self.payload))
+
     header = pack('!HHLLBBHHH',
                   self.srcp,
                   self.dstp,
@@ -59,6 +77,7 @@ class tcp_header:
                   self.window,
                   check,
                   self.urgp)
+
     return header + self.payload
 
   def parse(self, packet, offset):

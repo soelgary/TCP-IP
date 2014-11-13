@@ -12,24 +12,24 @@ import datetime
 class TCPClient():
   def __init__(self, destination, port, data):
     self.dest_addr = destination
-    self.src_addr = '192.168.1.218'
+    self.src_addr = '192.168.1.211'
     self.data = data
     self.port = port
     self.connection = TCP_Connection()
     self.ipheader = ip_header(src_adr=self.src_addr, dest_adr=self.dest_addr)
 
   def do_handshake(self):
-    print "attempting handshake with %s %s %s" % (self.src_addr, self.dest_addr, 't')
+    print "attempting handshake with %s %s" % (self.src_addr, self.dest_addr)
     self.connection.new_connection(self.dest_addr, self.port)
     self.connection.connect()
 
     self.send_syn()
-    
+
     syn_ack_packet = self.recv_syn_ack()
     if syn_ack_packet == None:
       print "timeout"
       exit()
-    
+
     syn_ack_packet.pprint()
 
     self.send_ack(syn_ack_packet)
