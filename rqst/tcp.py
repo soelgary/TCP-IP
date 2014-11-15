@@ -1,15 +1,13 @@
-import socket
-import itertools
-import re
+import socket, random, itertools, re
 from struct import *
 
 class tcp_header:
   def __init__(self, src_addr=None, dest_addr=None,
-          ack=0, syn=0, fin=0, seqn=0, checksum=0, ackn=0, payload=""):
+          ack=0, syn=0, fin=0, seqn=0, checksum=0, ackn=0, payload="", srcp=12345, window=socket.htons(5840)):
 
     self.src_addr = src_addr
     self.dest_addr = dest_addr
-    self.srcp = 12345
+    self.srcp = srcp
     self.dstp = 80
     self.seqn = seqn
     self.ackn = ackn
@@ -21,7 +19,7 @@ class tcp_header:
     self.rst = 0
     self.syn = syn
     self.fin = fin
-    self.window = socket.htons(2420)
+    self.window = window
     self.checksum = 0
     self.urgp = 0
     self.payload = payload
@@ -33,7 +31,7 @@ class tcp_header:
     """
     # if header is odd add padding
     if len(header) % 2 != 0:
-        header = header + '0'
+        header = header + '\x00'
     checksum = 0
     for index in range(0, len(header), 2):
         complement = (ord(header[index]) << 8) + (ord(header[index+1]) )
@@ -63,12 +61,14 @@ class tcp_header:
                   self.checksum,
                   self.urgp)
 
+    self.length = len(header) + len(self.payload)
+
     pseudo_header = pack('!4s4sBBH',
             socket.inet_aton(self.src_addr),
             socket.inet_aton(self.dest_addr),
             0,
             socket.IPPROTO_TCP,
-            len(header))
+            self.length)
 
     check = self.gen_checksum((pseudo_header + header + self.payload))
 
