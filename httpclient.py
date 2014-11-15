@@ -25,7 +25,7 @@ def httpget(arg):
       tcpclient = TCPClient(arg, 80, get_request)
   else:
       url = urlparse(arg)
-      get_request = "GET " + url.path  + " HTTP/1.0\r\nHost: " + url.netloc + "\r\n\r\n"
+      get_request = "GET " + url.path  + " HTTP/1.1\r\nHost: " + url.netloc + "\r\n\r\n"
       request['get_request'] = get_request
       request['scheme'] = url.scheme
       request['domain'] = url.netloc
