@@ -52,6 +52,8 @@ class TCPClient():
     bcolors.cprint('sending ack')
     self.send_ack(syn_ack_packet)
 
+    bcolors.cprint('sending data')
+    self.send_data()
 
     bcolors.cprint('begining packet capture')
     while True:
@@ -60,8 +62,6 @@ class TCPClient():
             new_packet = self.recv_data()
 
 
-    bcolors.cprint('sending data')
-    #self.send_data()
 
   def recv_data(self):
     start = datetime.datetime.now()
@@ -93,7 +93,7 @@ class TCPClient():
 
   def send_ack(self, packet):
     tcpheader = tcp_header(src_addr=self.src_addr, dest_addr=self.dest_addr,
-            ack=1, seqn=1, ackn=packet.tcp_header.seqn)
+            ack=1, seqn=1, ackn=packet.tcp_header.seqn+1)
     p = Packet()
     p.tcp_header = tcpheader
     p.ip_header = self.ipheader

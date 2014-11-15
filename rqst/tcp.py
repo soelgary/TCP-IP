@@ -21,7 +21,7 @@ class tcp_header:
     self.rst = 0
     self.syn = syn
     self.fin = fin
-    self.window = socket.htons(5840)
+    self.window = socket.htons(2420)
     self.checksum = 0
     self.urgp = 0
     self.payload = payload
