@@ -85,12 +85,11 @@ class TCPClient():
 
   def send_data(self,window_size):
     tcpheader = tcp_header(src_addr=self.src_addr, dest_addr=self.dest_addr,
-            seqn=self.seqn_counter, payload=self.data, srcp=self.incoming_port, window=window_size)
+            seqn=self.seqn_counter, payload=self.data, srcp=self.incoming_port, window=window_size, psh=1, ack=1, ackn=self.temp_ackn)
     p = Packet()
     p.tcp_header = tcpheader
     p.ip_header = self.ipheader
     pp = p.construct()
-    print p
     self.connection.send(pp)
 
   def send_ack(self, packet):
@@ -102,6 +101,7 @@ class TCPClient():
     pp = p.construct()
     print p
     self.connection.send(pp)
+    self.temp_ackn = packet.tcp_header.seqn+1
 
   def send_syn(self):
     tcpheader = tcp_header(src_addr=self.src_addr, dest_addr=self.dest_addr, syn=1,seqn=self.seqn_counter, srcp=self.incoming_port)

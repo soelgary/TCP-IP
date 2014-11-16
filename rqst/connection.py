@@ -22,7 +22,7 @@ class TCP_Connection:
       self.port = port
       self.buf = ""
       self.hostname = hostname
-      self.connect()
+      self.dst_ip = socket.gethostbyname(hostname)
       return self
 
     def connect(self):
@@ -49,7 +49,7 @@ class TCP_Connection:
           data will need to have valid HTTP headers
         """
         print "Attempting to send packet of size %d to %s" % (len(data), self.hostname)
-        self.sock.sendall(data)
+        self.sock.sendto(data, (self.dst_ip, 0))
 
     def recv(self):
         """

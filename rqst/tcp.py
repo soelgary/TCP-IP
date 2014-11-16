@@ -3,7 +3,7 @@ from struct import *
 
 class tcp_header:
   def __init__(self, src_addr=None, dest_addr=None,
-          ack=0, syn=0, fin=0, seqn=0, checksum=0, ackn=0, payload="", srcp=12345, window=socket.htons(5840)):
+          ack=0, syn=0, fin=0, psh=0, seqn=0, checksum=0, ackn=0, payload="", srcp=12345, window=socket.htons(5840)):
 
     self.src_addr = src_addr
     self.dest_addr = dest_addr
@@ -15,11 +15,11 @@ class tcp_header:
     self.reserved = 0
     self.urg = 0
     self.ack = ack
-    self.psh = 0
+    self.psh = psh
     self.rst = 0
     self.syn = syn
     self.fin = fin
-    self.window = window
+    self.window = socket.htons(5840)
     self.checksum = 0
     self.urgp = 0
     self.payload = payload
