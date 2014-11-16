@@ -107,6 +107,7 @@ class tcp_header:
     self.window = tcp_header_data[6]
     self.checksum = tcp_header_data[7]
     self.urgp = tcp_header_data[8]
+    self.payload = packet[offset+20:]
     return self
 
   def __str__(self):

@@ -54,10 +54,27 @@ class TCPClient():
     bcolors.cprint('sending ack')
     self.send_ack(syn_ack_packet)
 
-    #self.seqn_counter += 1
-
     bcolors.cprint('sending data')
     self.send_data(syn_ack_packet.tcp_header.window)
+    self.seqn_counter += 45
+    continue_receiving = True
+    data = ""
+    while continue_receiving:
+        packet_in = self.recv_data()
+        if packet_in == None:
+            print "TIMEOUT"
+            exit()
+        if len(packet_in.tcp_header.payload) > 0 and not packet_in.tcp_header.fin:
+            self.send_ack(packet_in)
+        data += packet_in.tcp_header.payload
+        if packet_in.tcp_header.fin:
+            self.send_fin_ack(packet_in)
+            print "RECEIVED FIN"
+            continue_receiving = False
+    print data
+    f = open('temp.html', 'w')
+    f.write(data)
+    exit()
 
     bcolors.cprint('begining packet capture')
     while True:
@@ -78,7 +95,6 @@ class TCPClient():
         if rec_packet.tcp_header.rst == 1:
             bcolors.wprint("Recieved reset flag, something done goofed, i think this is because the local port is closed")
             return None
-
         return rec_packet
       elif diff.total_seconds() > self.timeout:
         return None
@@ -99,7 +115,6 @@ class TCPClient():
     p.tcp_header = tcpheader
     p.ip_header = self.ipheader
     pp = p.construct()
-    print p
     self.connection.send(pp)
     self.temp_ackn = packet.tcp_header.seqn+1
 
@@ -109,8 +124,16 @@ class TCPClient():
     p.tcp_header = tcpheader
     p.ip_header = self.ipheader
     pp = p.construct()
-    print p
     self.connection.send(pp)
+
+  def send_fin_ack(self, packet_in):
+    tcpheader = tcp_header(src_addr=self.src_addr, dest_addr=self.dest_addr,seqn=self.seqn_counter, srcp=self.incoming_port, ack=1, ackn=packet_in.tcp_header.seqn+len(packet_in.tcp_header.payload)+1, fin=1)
+    p = Packet()
+    p.tcp_header = tcpheader
+    p.ip_header = self.ipheader
+    pp = p.construct()
+    self.connection.send(pp)
+
 
   def recv_syn_ack(self):
     start = datetime.datetime.now()
