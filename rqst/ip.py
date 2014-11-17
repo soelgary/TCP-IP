@@ -18,10 +18,6 @@ class ip_header:
     self.dest_adr = dest_adr
 
   def construct(self, offset):
-    print offset / 4
-    print 'Offset: XXXXXXXXXxx %d' % offset
-    #offset = (offset / 4) - 5
-
     header = pack("!BBHHHBBH4s4s",
               (self.version << 4) + self.ihl,
               self.tos,

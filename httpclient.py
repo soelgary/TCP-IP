@@ -25,6 +25,12 @@ def httpget(arg):
       tcpclient = TCPClient(arg, 80, get_request)
   else:
       url = urlparse(arg)
+      path = url.path
+      filename = path.split('/')[-1]
+      print filename
+      if url.path == "":
+        path = '/'
+        filename = 'index.html'
       get_request = "GET " + url.path  + " HTTP/1.0\r\nHost: " + url.netloc + "\r\n\r\n"
       request['get_request'] = get_request
       request['scheme'] = url.scheme
@@ -32,6 +38,11 @@ def httpget(arg):
       tcpclient = TCPClient(socket.gethostbyname(url.netloc), 80, get_request)
 
   tcpclient.do_handshake()
+  data = tcpclient.get_data()
+
+  f = open(filename, 'w')
+  f.write(data.split('\r\n\r\n')[1])
+  f.close()
 
 if __name__ == '__main__':
   httpget(sys.argv[1])
