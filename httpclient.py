@@ -28,8 +28,10 @@ def httpget(arg):
       path = url.path
       filename = path.split('/')[-1]
       print filename
+      print url.path
       if url.path == "":
         path = '/'
+      if path == '/':
         filename = 'index.html'
       get_request = "GET " + url.path  + " HTTP/1.0\r\nHost: " + url.netloc + "\r\n\r\n"
       request['get_request'] = get_request
@@ -40,6 +42,7 @@ def httpget(arg):
   tcpclient.do_handshake()
   data = tcpclient.get_data()
 
+  print filename
   f = open(filename, 'w')
   f.write(data.split('\r\n\r\n')[1])
   f.close()

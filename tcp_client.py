@@ -50,6 +50,9 @@ class TCPClient():
     if syn_ack_packet == None:
       print "timeout"
       exit()
+    self.next_seqn = syn_ack_packet.tcp_header.seqn + 1
+    self.seqn_offset = self.next_seqn - 1
+    self.last_len = 0
 
     bcolors.cprint("recieved")
 
@@ -61,15 +64,60 @@ class TCPClient():
     bcolors.cprint('sending data')
     self.send_data(syn_ack_packet.tcp_header.window)
 
+  def received_all_seqn(self, fin_packet):
+    if fin_packet == None:
+      return False
+    return fin_packet.tcp_header.seqn == self.next_seqn - self.last_len
+
+  def calculate_next_seqn(self, packet):
+    if self.next_seqn == packet.tcp_header.seqn:
+      self.last_len = len(packet.tcp_header.payload)
+      next = self.next_seqn + len(packet.tcp_header.payload)
+      while True:
+        print "calculating"
+        print next
+        if next in self.data and len(self.data[next]) > 0:
+          print self.data
+          next += len(self.data[next])
+        else:
+          print "returning next"
+          return next
+    else:
+      return self.next_seqn
+
   def get_data(self):
     data = ""
+    received_fin = False
+    fin_packet = None
     while True:
       packet = self.recv_data()
       if packet == None:
         print "BAD PACKET"
         continue
       self.data[packet.tcp_header.seqn] = packet.tcp_header.payload
+      self.next_seqn = self.calculate_next_seqn(packet)
+      print "recieved seqn", packet.tcp_header.seqn - self.seqn_offset, "expecting", self.next_seqn - self.seqn_offset
       if packet.tcp_header.fin:
+        received_fin = True
+        fin_packet = packet
+        print "FINNNNNNNNNNNNNNNNNNNNNn"
+        start = True
+        next_seq = 0
+        for k, v in sorted(self.data.items()):
+          if start:
+            next_seq = k + len(v)
+            start = False
+            print k - self.seqn_offset, next_seq - self.seqn_offset
+          else:
+            if k == next_seq:
+              next_seq += len(v)
+              print k - self.seqn_offset, next_seq - self.seqn_offset
+            else:
+              print "something fucked up here"
+              print k - self.seqn_offset
+              #print '\n\n\n\n\n'
+
+      if (received_fin or packet.tcp_header.fin) and self.received_all_seqn(fin_packet):
         #print data
         self.send_fin_ack(packet)
         print "DONE"
@@ -93,7 +141,7 @@ class TCPClient():
       #diff = datetime.datetime.now() - start
       rec_packet = self.rsocket.recvfrom(65565)
       rec_packet = Packet(data=rec_packet)
-      if rec_packet.ip_header.src_adr == self.dest_addr:
+      if rec_packet.ip_header.src_adr == self.dest_addr and rec_packet.tcp_header.dstp == self.incoming_port:
 
         #print rec_packet
 
