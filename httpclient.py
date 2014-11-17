@@ -8,6 +8,9 @@ from rqst.ip import ip_header
 from tcp_client import TCPClient
 
 def is_ip(arg):
+    '''
+    simple regex to check if valid IP address
+    '''
     aa=re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$",arg)
     if aa:
         return True
@@ -15,6 +18,9 @@ def is_ip(arg):
         return False
 
 def httpget(arg):
+  '''
+  makes an http GET request for the given url
+  '''
   request = {}
   if is_ip(arg):
       print 'rec ip'

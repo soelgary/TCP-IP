@@ -4,6 +4,9 @@ import re
 from struct import *
 
 class ip_header:
+  '''
+  Represents an IP header
+  '''
   def __init__(self, checksum=0, length=15, src_adr="127.0.0.1", dest_adr="54.213.206.253", reserved=0):
     self.version = 4
     self.ihl = 5
@@ -18,6 +21,9 @@ class ip_header:
     self.dest_adr = dest_adr
 
   def construct(self, offset):
+    '''
+    Constructs an IP header that can be sent over the network
+    '''
     header = pack("!BBHHHBBH4s4s",
               (self.version << 4) + self.ihl,
               self.tos,

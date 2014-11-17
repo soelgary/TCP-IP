@@ -2,6 +2,9 @@ import socket, random, itertools, re
 from struct import *
 
 class tcp_header:
+  '''
+  This class represents a TCP packet
+  '''
   def __init__(self, src_addr=None, dest_addr=None,
           ack=0, syn=0, fin=0, psh=0, seqn=0, checksum=0, ackn=0, payload="", srcp=12345, window=socket.htons(5840)):
 
@@ -41,6 +44,9 @@ class tcp_header:
     return checksum
 
   def construct(self):
+    '''
+    constructs the tcp packet that can be sent over the network
+    '''
     data_offset = (self.offset << 4) + 0
 
     flags = self.fin +\
@@ -86,6 +92,9 @@ class tcp_header:
     return header + self.payload
 
   def parse(self, packet, offset):
+    '''
+    parses an incoming packet from the network
+    '''
     tcp_header_data = unpack('!HHLLBBHHH', packet[offset:offset+20])
     # Get various field data
     self.srcp = tcp_header_data[0]

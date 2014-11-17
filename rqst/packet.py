@@ -25,6 +25,9 @@ class Packet:
           self.parse(data)
 
     def construct(self):
+      '''
+      constructs a TCP/IP packet 
+      '''
       tcph = self.tcp_header.construct()
       iph = self.ip_header.construct(self.tcp_header.length)
       self.header_size = self.ip_header.total_length + self.tcp_header.length
