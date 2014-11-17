@@ -38,13 +38,13 @@ class TCPClient():
     self.data = {}
 
   def do_handshake(self):
-    bcolors.cprint("attempting handshake with %s %s" % (self.src_addr, self.dest_addr))
+    #bcolors.cprint("attempting handshake with %s %s" % (self.src_addr, self.dest_addr))
 
-    bcolors.cprint("sending syn packet")
+    #bcolors.cprint("sending syn packet")
     # what if the syn is dropped?
     self.send_syn()
 
-    bcolors.cprint("attempting to recieve syn ack")
+    #bcolors.cprint("attempting to recieve syn ack")
     syn_ack_packet = self.recv_data()
 
     if syn_ack_packet == None:
@@ -54,14 +54,14 @@ class TCPClient():
     self.seqn_offset = self.next_seqn - 1
     self.last_len = 0
 
-    bcolors.cprint("recieved")
+    #bcolors.cprint("recieved")
 
     self.seqn_counter = syn_ack_packet.tcp_header.ackn
 
-    bcolors.cprint('sending ack')
+    #bcolors.cprint('sending ack')
     self.send_ack(syn_ack_packet)
 
-    bcolors.cprint('sending data')
+    #bcolors.cprint('sending data')
     self.send_data(syn_ack_packet.tcp_header.window)
 
   def received_all_seqn(self, fin_packet):
@@ -74,13 +74,10 @@ class TCPClient():
       self.last_len = len(packet.tcp_header.payload)
       next = self.next_seqn + len(packet.tcp_header.payload)
       while True:
-        print "calculating"
-        print next
         if next in self.data and len(self.data[next]) > 0:
-          print self.data
+          #print self.data
           next += len(self.data[next])
         else:
-          print "returning next"
           return next
     else:
       return self.next_seqn
@@ -96,31 +93,21 @@ class TCPClient():
         continue
       self.data[packet.tcp_header.seqn] = packet.tcp_header.payload
       self.next_seqn = self.calculate_next_seqn(packet)
-      print "recieved seqn", packet.tcp_header.seqn - self.seqn_offset, "expecting", self.next_seqn - self.seqn_offset
       if packet.tcp_header.fin:
         received_fin = True
         fin_packet = packet
-        print "FINNNNNNNNNNNNNNNNNNNNNn"
         start = True
         next_seq = 0
         for k, v in sorted(self.data.items()):
           if start:
             next_seq = k + len(v)
             start = False
-            print k - self.seqn_offset, next_seq - self.seqn_offset
           else:
             if k == next_seq:
               next_seq += len(v)
-              print k - self.seqn_offset, next_seq - self.seqn_offset
-            else:
-              print "something fucked up here"
-              print k - self.seqn_offset
-              #print '\n\n\n\n\n'
 
       if (received_fin or packet.tcp_header.fin) and self.received_all_seqn(fin_packet):
-        #print data
         self.send_fin_ack(packet)
-        print "DONE"
         data = ""
         for seq, data_part in sorted(self.data.items()):
           data += data_part
@@ -147,7 +134,7 @@ class TCPClient():
 
         # recieved reset packet
         if rec_packet.tcp_header.rst == 1:
-            bcolors.wprint("Recieved reset flag, something done goofed, i think this is because the local port is closed")
+            #bcolors.wprint("Recieved reset flag, something done goofed, i think this is because the local port is closed")
             return None
         return rec_packet
 
