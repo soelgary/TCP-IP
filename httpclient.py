@@ -27,8 +27,6 @@ def httpget(arg):
       url = urlparse(arg)
       path = url.path
       filename = path.split('/')[-1]
-      print filename
-      print url.path
       if url.path == "":
         path = '/'
       if path == '/':
