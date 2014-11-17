@@ -8,9 +8,9 @@ from rqst.packet import Packet
 from struct import *
 
 class bcolors:
-  '''
-  This class is used for debugging purposes to get pretty colors for printing
-  '''
+    '''
+    This class is used for debugging purposes to get pretty colors for printing
+    '''
     HEADER = '\033[95m'
     WARN = '\033[1;93m'
     END = '\033[0m'
